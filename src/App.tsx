@@ -157,8 +157,20 @@ export default function App() {
       // Update UI notify the user they can install the PWA
       setShowInstallBanner(true);
     };
+
+    const installedHandler = () => {
+      console.log('PWA was installed successfully');
+      setShowInstallBanner(false);
+      setDeferredPrompt(null);
+      showToast('App installed successfully!');
+    };
+
     window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    window.addEventListener('appinstalled', installedHandler);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('appinstalled', installedHandler);
+    };
   }, []);
 
   const handleInstallClick = async () => {

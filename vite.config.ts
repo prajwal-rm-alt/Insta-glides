@@ -11,12 +11,14 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        injectRegister: false,
+        injectRegister: 'inline',
+        manifestFilename: 'manifest.json',
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
           cleanupOutdatedCaches: true,
           clientsClaim: true,
-          skipWaiting: true
+          skipWaiting: true,
+          navigateFallback: '/index.html'
         },
         manifest: {
           id: "/",
@@ -28,6 +30,8 @@ export default defineConfig(() => {
           display: "standalone",
           background_color: "#09090b",
           theme_color: "#09090b",
+          orientation: "portrait",
+          categories: ["utilities", "social"],
           icons: [
             {
               src: "/icon-192.png",
