@@ -99,6 +99,33 @@ export default function App() {
   // Toast State
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // PWA Install Prompt State
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e);
+      // Update UI notify the user they can install the PWA
+      setShowInstallBanner(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    setShowInstallBanner(false);
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User response to the install prompt: ${outcome}`);
+      setDeferredPrompt(null);
+    }
+  };
+
   const showToast = (message: string) => {
     setToastMessage(message);
     setTimeout(() => setToastMessage(null), 3000);
@@ -337,6 +364,42 @@ export default function App() {
            </button>
         )}
       </header>
+
+      {/* PWA Install Banner */}
+      <AnimatePresence>
+        {showInstallBanner && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="mx-4 mt-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-4 shadow-lg flex items-center justify-between text-white"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                <Download className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-semibold text-sm">Install Insta Glide</span>
+                <span className="text-xs text-blue-100">Add to your home screen</span>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setShowInstallBanner(false)}
+                className="px-3 py-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                Later
+              </button>
+              <button 
+                onClick={handleInstallClick}
+                className="px-3 py-1.5 text-xs font-semibold bg-white text-blue-600 hover:bg-blue-50 rounded-lg transition-colors shadow-sm"
+              >
+                Install
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <main className="max-w-md mx-auto px-4 pt-6 space-y-8">
         
