@@ -1,0 +1,6 @@
+{
+  "name": "InstaGlide",
+  "description": "Seamless high-quality Instagram reel and post downloader with batch processing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
