@@ -1,5 +1,6 @@
 const sharp = require('sharp');
 const fs = require('fs');
+const pngToIco = require('png-to-ico').default;
 
 async function generate() {
   const svgBuffer = fs.readFileSync('./public/icon.svg');
@@ -14,7 +15,15 @@ async function generate() {
     .png()
     .toFile('./public/icon-512.png');
     
-  console.log('Icons generated successfully!');
+  await sharp(svgBuffer)
+    .resize(180, 180)
+    .png()
+    .toFile('./public/apple-touch-icon.png');
+    
+  const buf = await pngToIco('./public/icon-192.png');
+  fs.writeFileSync('./public/favicon.ico', buf);
+    
+  console.log('Icons and ICO generated successfully!');
 }
 
 generate().catch(console.error);

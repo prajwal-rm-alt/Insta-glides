@@ -12,7 +12,8 @@ import {
   Zap,
   Layers,
   CheckCircle2,
-  ListVideo
+  ListVideo,
+  Instagram
 } from 'lucide-react';
 import { MediaItem, ExtractionResponse } from './types';
 
@@ -316,7 +317,12 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-28 selection:bg-blue-200">
       {/* Header */}
       <header className="pt-12 pb-4 px-6 bg-white/70 backdrop-blur-xl sticky top-0 z-40 border-b border-gray-200/50 flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">InstaGlide</h1>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#ffb13f] via-[#fd5949] to-[#d6249f] flex items-center justify-center shadow-sm">
+            <Instagram className="w-5 h-5 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">InstaGlide</h1>
+        </div>
         {activeTab === 'saved' && history.length > 1 && (
            <button 
              onClick={handleDownloadAll}
