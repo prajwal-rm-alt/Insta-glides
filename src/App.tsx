@@ -13,11 +13,21 @@ import {
   Layers,
   CheckCircle2,
   ListVideo,
-  Instagram
+  Instagram,
+  Play
 } from 'lucide-react';
 import { MediaItem, ExtractionResponse } from './types';
 
 const MediaCard: React.FC<{ item: MediaItem, isDownloading: boolean, onDownload: (item: MediaItem) => void, onRemove: (id: string) => void }> = ({ item, isDownloading, onDownload, onRemove }) => {
+  const [isPreviewing, setIsPreviewing] = useState(false);
+
+  const getPreviewUrl = (url: string) => {
+    if (url.includes('rapidcdn.app') || url.includes('snapcdn')) {
+      return url;
+    }
+    return `/api/proxy?url=${encodeURIComponent(url)}`;
+  };
+
   return (
     <motion.div
       layout
@@ -26,27 +36,53 @@ const MediaCard: React.FC<{ item: MediaItem, isDownloading: boolean, onDownload:
       exit={{ opacity: 0, scale: 0.95 }}
       className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 flex flex-col"
     >
-      <div className="relative aspect-square bg-gray-100">
-        {item.thumbnail ? (
-          <img src={item.thumbnail} alt="" className="w-full h-full object-cover" />
+      <div className="relative aspect-square bg-gray-100 group">
+        {isPreviewing && item.downloadUrl ? (
+          item.type === 'video' ? (
+            <video 
+              src={getPreviewUrl(item.downloadUrl)} 
+              controls 
+              autoPlay 
+              playsInline
+              className="w-full h-full object-contain bg-black" 
+            />
+          ) : (
+            <img src={getPreviewUrl(item.downloadUrl)} alt="" className="w-full h-full object-contain bg-black" />
+          )
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
-            {item.type === 'video' ? <Video className="w-12 h-12" /> : <ImageIcon className="w-12 h-12" />}
-          </div>
+          item.thumbnail ? (
+            <img src={item.thumbnail} alt="" className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-90" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              {item.type === 'video' ? <Video className="w-12 h-12" /> : <ImageIcon className="w-12 h-12" />}
+            </div>
+          )
         )}
-          <div className="absolute top-4 right-4 flex items-center gap-2">
-            {item.quality === 'HD' && (
-              <div className="bg-blue-600/90 backdrop-blur-md px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wider">
-                HD
-              </div>
-            )}
-            {item.type === 'video' && (
-              <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 text-white text-xs font-semibold tracking-wide">
-                <Video className="w-3.5 h-3.5" />
-                VIDEO
-              </div>
-            )}
-          </div>
+          {!isPreviewing && (
+            <div className="absolute top-4 right-4 flex items-center gap-2">
+              {item.quality === 'HD' && (
+                <div className="bg-blue-600/90 backdrop-blur-md px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wider">
+                  HD
+                </div>
+              )}
+              {item.type === 'video' && (
+                <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 text-white text-xs font-semibold tracking-wide">
+                  <Video className="w-3.5 h-3.5" />
+                  VIDEO
+                </div>
+              )}
+            </div>
+          )}
+          {!isPreviewing && item.downloadUrl && (
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <button 
+                onClick={() => setIsPreviewing(true)}
+                className="w-14 h-14 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white transform hover:scale-110 transition-transform shadow-lg"
+              >
+                <Play className="w-6 h-6 ml-1" />
+              </button>
+            </div>
+          )}
       </div>
 
       <div className="p-5 flex flex-col gap-4">
@@ -60,17 +96,26 @@ const MediaCard: React.FC<{ item: MediaItem, isDownloading: boolean, onDownload:
         </div>
         
         <div className="flex gap-2">
+          {!isPreviewing && item.downloadUrl && (
+            <button
+              onClick={() => setIsPreviewing(true)}
+              className="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-transform active:scale-95"
+            >
+              <Play className="w-5 h-5" />
+              Preview
+            </button>
+          )}
           <button
             onClick={() => onDownload(item)}
             disabled={isDownloading}
-            className="flex-1 bg-black hover:bg-gray-800 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+            className="flex-[2] bg-black hover:bg-gray-800 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isDownloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
             Download {item.quality === 'HD' ? 'HD' : ''}
           </button>
           <button
             onClick={() => onRemove(item.id)}
-            className="p-3.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-colors active:scale-95"
+            className="p-3.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-colors active:scale-95 flex-shrink-0"
           >
             <Trash2 className="w-5 h-5" />
           </button>
